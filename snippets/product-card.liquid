@@ -33,20 +33,23 @@
 
   {%- capture text_body_sm -%}font-(family-name:--font-body-family) text-[14px] font-normal leading-[16px]{%- endcapture -%}
 
-  <product-card class="block">
-    <div class="flex h-[452px] w-[315px] flex-col items-start gap-[15px]">
+  <product-card class="block w-full max-w-[315px]">
+    <div class="flex w-full flex-col items-start gap-[15px]">
       <div
         data-product-card-media
-        class="relative box-border h-[340px] w-[315px] rounded-[10px] border border-[#E8E8E8] bg-white"
+        class="relative box-border w-full aspect-63/68 overflow-hidden rounded-[10px] border border-[#E8E8E8] bg-white"
       >
         <span
           data-product-card-badge
-          class="absolute left-[20px] top-[20px] z-10 box-border flex items-center justify-center rounded-full border border-[#FF0000] px-[12px] py-[6px] font-(family-name:--font-body-family) text-[15px] leading-[18px] text-[#FF0000] {% unless on_sale %}hidden{% endunless %}"
+          class="absolute left-[6.35%] top-[5.88%] z-10 box-border flex items-center justify-center rounded-full border border-[#FF0000] px-[12px] py-[6px] font-(family-name:--font-body-family) text-[15px] leading-[18px] text-[#FF0000] {% unless on_sale %}hidden{% endunless %}"
         >
           {{ 'products.product.on_sale' | t | default: 'On Sale!' }}
         </span>
 
-        <a href="{{ card_product.url }}" class="absolute left-[20px] top-[20px] block h-[301px] w-[275px]">
+        <a
+          href="{{ card_product.url }}"
+          class="absolute left-[6.35%] top-[5.88%] box-border block h-[88.53%] w-[87.3%] p-[12px]"
+        >
           {%- if card_product.featured_media -%}
             <img
               data-product-card-image
@@ -63,12 +66,12 @@
         </a>
       </div>
 
-      <div class="flex w-full flex-col items-start gap-[15px]">
+      <div class="flex w-full flex-col items-start">
         {%- if color_option_index > -1 -%}
           <div
             role="radiogroup"
             aria-label="{{ card_product.options_with_values[color_option_index].name }}"
-            class="flex items-center gap-[8px]"
+            class="flex flex-wrap items-center gap-[8px]"
           >
             {%- for value in card_product.options_with_values[color_option_index].values -%}
               {%- liquid
@@ -98,7 +101,7 @@
             </p>
             <a
               href="{{ card_product.url }}"
-              class="font-(family-name:--font-heading-family) text-[16px] font-medium leading-[18px] text-[#0A4874] no-underline hover:underline"
+              class="font-(family-name:--font-heading-family) text-[16px] font-medium leading-[18px] text-[#0A4874] no-underline"
             >
               {{ card_product.title }}
             </a>

@@ -1,12 +1,12 @@
 {{ 'tailwind.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
 
-<div class="mx-auto max-w-[1280px] px-[16px] py-[40px] sm:px-[24px] lg:px-[32px]">
+<div class="mx-auto px-[16px] py-[40px] sm:px-[24px] lg:px-[32px] {% if section.settings.width == 'page' %}max-w-[1440px]{% endif %}">
   {%- if section.settings.heading != blank -%}
     <h2 class="mb-[24px] text-[24px] leading-[32px] font-bold text-gray-900">{{ section.settings.heading }}</h2>
   {%- endif -%}
 
-  <div class="flex flex-wrap gap-[24px]">
+  <div class="grid grid-cols-2 gap-[16px] sm:grid-cols-3 sm:gap-[24px] lg:grid-cols-4">
     {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
       {%- render 'product-card', card_product: product -%}
     {%- else -%}
@@ -40,6 +40,22 @@
       "max": 12,
       "step": 1,
       "default": 8
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page (1440px)"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "page"
     }
   ],
   "presets": [
