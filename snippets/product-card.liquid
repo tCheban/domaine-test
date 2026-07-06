@@ -1,0 +1,187 @@
+{% comment %}
+  Renders a product card built from scratch with Tailwind utility classes.
+
+  Accepts:
+  - card_product: {Object} Product Liquid object
+
+  Usage:
+  {% render 'product-card', card_product: product %}
+{% endcomment %}
+
+{%- if card_product and card_product != empty -%}
+  {%- liquid
+    assign color_option_index = -1
+    for option in card_product.options_with_values
+      if option.name == 'Color' or option.name == 'Colour'
+        assign color_option_index = forloop.index0
+      endif
+    endfor
+
+    assign current_variant = card_product.selected_or_first_available_variant
+    assign on_sale = false
+    if current_variant.compare_at_price > current_variant.price
+      assign on_sale = true
+    endif
+
+    assign current_price_formatted = current_variant.price | money
+    assign current_compare_formatted = current_variant.compare_at_price | money
+    if settings.currency_code_enabled
+      assign current_price_formatted = current_variant.price | money_with_currency
+      assign current_compare_formatted = current_variant.compare_at_price | money_with_currency
+    endif
+  -%}
+
+  {%- capture text_body_sm -%}font-(family-name:--font-body-family) text-[14px] font-normal leading-[16px]{%- endcapture -%}
+
+  <product-card class="block">
+    <div class="flex h-[452px] w-[315px] flex-col items-start gap-[15px]">
+      <div
+        data-product-card-media
+        class="relative box-border h-[340px] w-[315px] rounded-[10px] border border-[#E8E8E8] bg-white"
+      >
+        <span
+          data-product-card-badge
+          class="absolute left-[20px] top-[20px] z-10 box-border flex items-center justify-center rounded-full border border-[#FF0000] px-[12px] py-[6px] font-(family-name:--font-body-family) text-[15px] leading-[18px] text-[#FF0000] {% unless on_sale %}hidden{% endunless %}"
+        >
+          {{ 'products.product.on_sale' | t | default: 'On Sale!' }}
+        </span>
+
+        <a href="{{ card_product.url }}" class="absolute left-[20px] top-[20px] block h-[301px] w-[275px]">
+          {%- if card_product.featured_media -%}
+            <img
+              data-product-card-image
+              src="{{ current_variant.featured_image | default: card_product.featured_media | image_url: width: 600 }}"
+              alt="{{ current_variant.featured_image.alt | default: card_product.featured_media.alt | default: card_product.title | escape }}"
+              width="600"
+              height="600"
+              loading="lazy"
+              class="h-full w-full object-contain transition-opacity duration-150"
+            >
+          {%- else -%}
+            {{ 'product-apparel-1' | placeholder_svg_tag: 'h-full w-full object-contain' }}
+          {%- endif -%}
+        </a>
+      </div>
+
+      <div class="flex w-full flex-col items-start gap-[15px]">
+        {%- if color_option_index > -1 -%}
+          <div
+            role="radiogroup"
+            aria-label="{{ card_product.options_with_values[color_option_index].name }}"
+            class="flex items-center gap-[8px]"
+          >
+            {%- for value in card_product.options_with_values[color_option_index].values -%}
+              {%- liquid
+                assign is_selected = false
+                if value == current_variant.options[color_option_index]
+                  assign is_selected = true
+                endif
+              -%}
+              <button
+                type="button"
+                data-product-card-swatch
+                data-color="{{ value | escape }}"
+                aria-label="{{ value | escape }}"
+                aria-checked="{{ is_selected }}"
+                role="radio"
+                class="h-[20px] w-[20px] shrink-0 cursor-pointer appearance-none border-0 bg-transparent p-0 rounded-full {% if is_selected %}ring-1! ring-offset-1! ring-[#0A4874]! ring-offset-white!{% endif %}"
+                style="background-color: {{ value.swatch.color | default: value | handle }};"
+              ></button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        <div class="flex flex-col items-start gap-[8px]">
+          <div class="flex flex-col items-start gap-0">
+            <p class="{{ text_body_sm }} text-[#111111]">
+              {{ card_product.vendor }}
+            </p>
+            <a
+              href="{{ card_product.url }}"
+              class="font-(family-name:--font-heading-family) text-[16px] font-medium leading-[18px] text-[#0A4874] no-underline hover:underline"
+            >
+              {{ card_product.title }}
+            </a>
+          </div>
+
+          <div class="flex items-start gap-[8px]">
+            <span
+              data-product-card-price-compare
+              class="{{ text_body_sm }} text-[#111111] line-through {% unless on_sale %}hidden{% endunless %}"
+            >
+              {{ current_compare_formatted }}
+            </span>
+            <span
+              data-product-card-price-sale
+              class="{{ text_body_sm }} {% if on_sale %}text-[#FF0000]{% else %}text-[#111111]{% endif %}"
+            >
+              {{ current_price_formatted }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {%- if color_option_index > -1 -%}
+        <script type="application/json" data-product-card-variants>
+          [
+            {%- for value in card_product.options_with_values[color_option_index].values -%}
+              {%- liquid
+                # Each color is represented by its first matching variant (this card only
+                # ever offers a Color choice, so size/other options aren't distinguished).
+                # Hover images come from a variant-level metafield: Settings > Custom data >
+                # Variants > "Hover image" (namespace/key custom.hover_image, type: File).
+                assign color_variant = nil
+                assign color_available = false
+                for variant in card_product.variants
+                  if variant.options[color_option_index] == value
+                    if color_variant == nil
+                      assign color_variant = variant
+                    endif
+                    if variant.available
+                      assign color_available = true
+                    endif
+                  endif
+                endfor
+
+                assign main_image = color_variant.featured_image | default: card_product.featured_media
+                assign hover_image = color_variant.metafields.custom.hover_image.value
+
+                assign color_on_sale = false
+                if color_variant.compare_at_price > color_variant.price
+                  assign color_on_sale = true
+                endif
+
+                assign color_selected = false
+                if value == current_variant.options[color_option_index]
+                  assign color_selected = true
+                endif
+
+                assign color_price_formatted = color_variant.price | money
+                assign color_compare_formatted = nil
+                if settings.currency_code_enabled
+                  assign color_price_formatted = color_variant.price | money_with_currency
+                endif
+                if color_on_sale
+                  assign color_compare_formatted = color_variant.compare_at_price | money
+                  if settings.currency_code_enabled
+                    assign color_compare_formatted = color_variant.compare_at_price | money_with_currency
+                  endif
+                endif
+              -%}
+              {
+                "color": {{ value | json }},
+                "selected": {{ color_selected | json }},
+                "available": {{ color_available | json }},
+                "onSale": {{ color_on_sale | json }},
+                "priceFormatted": {{ color_price_formatted | json }},
+                "compareAtPriceFormatted": {{ color_compare_formatted | json }},
+                "image": {{ main_image | image_url: width: 800 | json }},
+                "hoverImage": {% if hover_image %}{{ hover_image | image_url: width: 800 | json }}{% else %}null{% endif %}
+              }{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+          ]
+        </script>
+      {%- endif -%}
+    </div>
+  </product-card>
+{%- endif -%}

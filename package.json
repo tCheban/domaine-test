@@ -1,0 +1,14 @@
+{
+  "name": "domaine-test-theme",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./assets/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/tailwind.css -o ./assets/tailwind.css --watch",
+    "theme:dev": "shopify theme dev",
+    "theme:push": "shopify theme push"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.2",
+    "tailwindcss": "^4.3.2"
+  }
+}

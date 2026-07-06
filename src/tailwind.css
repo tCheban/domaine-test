@@ -1,0 +1,18 @@
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@source "../layout";
+@source "../sections";
+@source "../snippets";
+@source "../templates";
+@source "../assets";
+
+/*
+  The theme sets `html { font-size: 62.5% }` (layout/theme.liquid), making 1rem = 10px
+  instead of the 16px Tailwind assumes. Rescale the spacing primitive so the numbered
+  scale (h-*, w-*, gap-*, p-*, m-*, top-*, left-*, ...) still resolves to real pixels:
+  0.4rem * 10px = 4px, matching Tailwind's default 4px-per-unit step.
+*/
+@theme {
+  --spacing: 0.4rem;
+}
